@@ -1,5 +1,7 @@
 # wf-nanoclust
 
+Adapted version of the NanoCLUST workflow for EPI2ME Desktop.
+
 **De novo clustering and consensus building for 16S/18S rRNA amplicons from Oxford Nanopore sequencing**
 
 [![EPI2ME Compatible](https://img.shields.io/badge/EPI2ME-Compatible-blue)](https://epi2me.nanoporetech.com/)
