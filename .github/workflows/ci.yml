@@ -33,7 +33,13 @@ jobs:
 
       - name: Validate Nextflow schema/help
         run: |
-          nextflow run main.nf --help
+          nextflow run main.nf \
+            --fastq dummy.fastq \
+            --database dummy_db \
+            --taxonomy dummy_tax \
+            --out_dir output \
+            -profile test \
+            --dry-run
 
   test:
     name: Test
