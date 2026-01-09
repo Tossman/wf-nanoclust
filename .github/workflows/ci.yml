@@ -14,19 +14,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
       - name: Validate JSON files
         run: |
           python -m json.tool nextflow_schema.json > /dev/null
           python -m json.tool output_definition.json > /dev/null
           echo "JSON files are valid"
-      
-      - name: Check Nextflow syntax
+
+      - name: Setup Nextflow
         uses: nf-core/setup-nextflow@v1
         with:
           version: 23.04.2
-      
-      - name: Validate schema
+
+      - name: Validate Nextflow schema/help
         run: |
           nextflow run main.nf --help
 
@@ -36,21 +41,24 @@ jobs:
     needs: lint
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Nextflow
         uses: nf-core/setup-nextflow@v1
         with:
           version: 23.04.2
-      
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Build test container
         run: |
           docker build -t ontresearch/wf-nanoclust:test docker/
-      
+
       - name: Run test profile
         run: |
-          nextflow run main.nf -profile test,standard --database data/test_db --taxonomy data/test_taxdb || true
-          # Note: Full test requires BLAST database
+          nextflow run main.nf -profile test,standard --database data/test_db --taxonomy data/test_taxdb
           echo "Basic pipeline test completed"
+        continue-on-error: true
 
   build-container:
     name: Build Container
@@ -59,13 +67,13 @@ jobs:
     if: github.event_name == 'release'
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      
+
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
@@ -82,21 +90,16 @@ jobs:
     if: github.event_name == 'release'
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Pull container
         run: docker pull ontresearch/wf-nanoclust:${{ github.event.release.tag_name }}
-      
+
       - name: Create 2ME package
         run: |
           chmod +x create_2me.sh
           ./create_2me.sh ${{ github.event.release.tag_name }}
-      
+
       - name: Upload 2ME artifact
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./wf-nanoclust-${{ github.event.release.tag_name }}.2me
-          asset_name: wf-nanoclust-${{ github.event.release.tag_name }}.2me
-          asset_content_type: application/gzip
+          files: ./wf-nanoclust-${{ github.event.release.tag_name }}.2me
