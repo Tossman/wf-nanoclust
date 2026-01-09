@@ -1,0 +1,243 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "https://raw.githubusercontent.com/epi2me-labs/wf-nanoclust/master/nextflow_schema.json",
+    "title": "epi2me-labs/wf-nanoclust",
+    "workflow_title": "NanoCLUST 16S/18S rRNA Clustering Workflow",
+    "description": "De novo clustering and taxonomic classification of 16S/18S rRNA amplicons from Oxford Nanopore sequencing data using UMAP and HDBSCAN.",
+    "demo_url": "https://ont-exd-int-s3-euwst1-epi2me-labs.s3.amazonaws.com/wf-nanoclust/wf-nanoclust-demo.tar.gz",
+    "aws_demo_url": "https://ont-exd-int-s3-euwst1-epi2me-labs.s3.amazonaws.com/wf-nanoclust/wf-nanoclust-demo.tar.gz",
+    "url": "https://github.com/epi2me-labs/wf-nanoclust",
+    "type": "object",
+    "definitions": {
+        "input": {
+            "title": "Input Options",
+            "type": "object",
+            "fa_icon": "fas fa-arrow-right",
+            "description": "Parameters for finding and handling input data for analysis.",
+            "properties": {
+                "fastq": {
+                    "type": "string",
+                    "format": "path",
+                    "title": "FASTQ",
+                    "description": "FASTQ file(s) or directory containing FASTQ files for analysis.",
+                    "help_text": "This accepts one of the following: (i) the path to a single FASTQ file; (ii) the path to a top-level directory containing FASTQ files; (iii) the path to a directory containing one level of sub-directories which in turn contain FASTQ files. In the first and second cases, a sample name can be supplied with `--sample`. In the last case, the data is assumed to be multiplexed with the names of the sub-directories as barcodes. In this case, a sample sheet can be provided with `--sample_sheet`."
+                },
+                "bam": {
+                    "type": "string",
+                    "format": "path",
+                    "title": "BAM",
+                    "description": "BAM/uBAM file(s) as alternative to FASTQ input.",
+                    "help_text": "Cannot be used together with --fastq. This accepts one of the following: (i) the path to a single BAM file; (ii) the path to a top-level directory containing BAM files; (iii) the path to a directory containing one level of sub-directories which in turn contain BAM files."
+                },
+                "sample": {
+                    "type": "string",
+                    "title": "Sample name",
+                    "description": "A sample name for non-multiplexed data.",
+                    "help_text": "Permissible if passing a single file or folder of files."
+                },
+                "sample_sheet": {
+                    "type": "string",
+                    "format": "file-path",
+                    "title": "Sample sheet",
+                    "description": "A CSV file used to map barcodes to sample aliases.",
+                    "help_text": "The sample sheet is a CSV file with, minimally, columns named `barcode` and `alias`. Extra columns are allowed. A `type` column is optional and can contain values: test_sample, positive_control, negative_control, no_template_control."
+                },
+                "analyse_unclassified": {
+                    "type": "boolean",
+                    "default": false,
+                    "title": "Analyse unclassified",
+                    "description": "Analyse unclassified reads from input directory.",
+                    "help_text": "By default, unclassified reads are ignored. Set this flag to include them in the analysis."
+                }
+            },
+            "required": []
+        },
+        "filtering": {
+            "title": "Read Filtering",
+            "type": "object",
+            "fa_icon": "fas fa-filter",
+            "description": "Quality control and read filtering parameters for 16S/18S reads.",
+            "properties": {
+                "min_read_length": {
+                    "type": "integer",
+                    "default": 1400,
+                    "minimum": 100,
+                    "maximum": 5000,
+                    "title": "Minimum read length",
+                    "description": "Minimum read length in base pairs to retain.",
+                    "help_text": "For 16S rRNA analysis, typically use 1400bp. For 18S rRNA, use 1700bp."
+                },
+                "max_read_length": {
+                    "type": "integer",
+                    "default": 1700,
+                    "minimum": 500,
+                    "maximum": 10000,
+                    "title": "Maximum read length",
+                    "description": "Maximum read length in base pairs to retain.",
+                    "help_text": "For 16S rRNA analysis, typically use 1700bp. For 18S rRNA, use 2100bp."
+                },
+                "min_read_quality": {
+                    "type": "number",
+                    "default": 8,
+                    "minimum": 0,
+                    "maximum": 40,
+                    "title": "Minimum read quality",
+                    "description": "Minimum mean Phred quality score for reads.",
+                    "help_text": "Reads below this quality threshold will be filtered out. Default of 8 is suitable for most applications."
+                }
+            }
+        },
+        "clustering": {
+            "title": "Clustering Parameters",
+            "type": "object",
+            "fa_icon": "fas fa-project-diagram",
+            "description": "UMAP dimensionality reduction and HDBSCAN clustering configuration.",
+            "properties": {
+                "umap_set_size": {
+                    "type": "integer",
+                    "default": 100000,
+                    "minimum": 1000,
+                    "maximum": 500000,
+                    "title": "UMAP dataset size",
+                    "description": "Maximum number of reads for UMAP+HDBSCAN clustering.",
+                    "help_text": "Higher values provide better clustering resolution but require more memory. Memory usage: 50000 reads = ~10-13GB RAM, 100000 reads = ~32-36GB RAM. Reduce this value if you encounter memory errors."
+                },
+                "cluster_sel_epsilon": {
+                    "type": "number",
+                    "default": 0.5,
+                    "minimum": 0.0,
+                    "maximum": 2.0,
+                    "title": "Cluster epsilon",
+                    "description": "Minimum HDBSCAN distance threshold between clusters.",
+                    "help_text": "Lower values (0.3) create more distinct clusters (higher resolution), while higher values (0.7) merge similar clusters. Adjust based on expected sample diversity."
+                },
+                "min_cluster_size": {
+                    "type": "integer",
+                    "default": 50,
+                    "minimum": 10,
+                    "maximum": 1000,
+                    "title": "Minimum cluster size",
+                    "description": "Minimum number of reads required to form a cluster.",
+                    "help_text": "Clusters with fewer reads than this threshold will be discarded. Higher values reduce noise but may miss rare taxa. Lower values increase sensitivity but may include spurious clusters."
+                }
+            }
+        },
+        "polishing": {
+            "title": "Consensus Polishing",
+            "type": "object",
+            "fa_icon": "fas fa-star",
+            "description": "Parameters for consensus sequence generation and polishing.",
+            "properties": {
+                "polishing_reads": {
+                    "type": "integer",
+                    "default": 100,
+                    "minimum": 10,
+                    "maximum": 1000,
+                    "title": "Polishing read depth",
+                    "description": "Number of reads used for consensus polishing per cluster.",
+                    "help_text": "Higher values improve consensus accuracy but increase runtime. For mock communities or low-diversity samples, 50-100 reads is sufficient. For complex samples, consider 150-200 reads."
+                }
+            }
+        },
+        "classification": {
+            "title": "Taxonomic Classification",
+            "type": "object",
+            "fa_icon": "fas fa-dna",
+            "description": "BLAST database and classification settings for taxonomic assignment.",
+            "properties": {
+                "database": {
+                    "type": "string",
+                    "format": "path",
+                    "title": "BLAST database",
+                    "description": "Path to local BLAST nucleotide database.",
+                    "help_text": "Path to the NCBI 16S_ribosomal_RNA database or custom database. Download from: ftp://ftp.ncbi.nlm.nih.gov/blast/db/16S_ribosomal_RNA.tar.gz"
+                },
+                "taxonomy": {
+                    "type": "string",
+                    "format": "path",
+                    "title": "Taxonomy database",
+                    "description": "Path to NCBI taxdb directory for taxonomic lineage information.",
+                    "help_text": "Required for full taxonomic lineage in results. Download taxdb.tar.gz from: ftp://ftp.ncbi.nlm.nih.gov/blast/db/taxdb.tar.gz"
+                }
+            },
+            "required": ["database", "taxonomy"]
+        },
+        "output": {
+            "title": "Output Options",
+            "type": "object",
+            "fa_icon": "fas fa-folder-open",
+            "description": "Parameters for output location and reporting.",
+            "properties": {
+                "out_dir": {
+                    "type": "string",
+                    "default": "output",
+                    "format": "directory-path",
+                    "title": "Output directory",
+                    "description": "Directory for output results and reports."
+                },
+                "disable_ping": {
+                    "type": "boolean",
+                    "default": false,
+                    "title": "Disable ping",
+                    "description": "Disable anonymous usage telemetry."
+                }
+            }
+        },
+        "advanced": {
+            "title": "Advanced Options",
+            "type": "object",
+            "fa_icon": "fas fa-cogs",
+            "description": "Advanced configuration options.",
+            "properties": {
+                "threads": {
+                    "type": "integer",
+                    "default": 4,
+                    "minimum": 1,
+                    "maximum": 64,
+                    "title": "CPU threads",
+                    "description": "Number of CPU threads for multi-threaded processes.",
+                    "hidden": true
+                }
+            }
+        }
+    },
+    "allOf": [
+        {"$ref": "#/definitions/input"},
+        {"$ref": "#/definitions/filtering"},
+        {"$ref": "#/definitions/clustering"},
+        {"$ref": "#/definitions/polishing"},
+        {"$ref": "#/definitions/classification"},
+        {"$ref": "#/definitions/output"},
+        {"$ref": "#/definitions/advanced"}
+    ],
+    "properties": {
+        "process_label": {
+            "type": "string",
+            "hidden": true
+        },
+        "aws_image_prefix": {
+            "type": "string",
+            "hidden": true
+        },
+        "aws_queue": {
+            "type": "string",
+            "hidden": true
+        },
+        "monochrome_logs": {
+            "type": "boolean",
+            "hidden": true
+        },
+        "validate_params": {
+            "type": "boolean",
+            "hidden": true
+        },
+        "show_hidden_params": {
+            "type": "boolean",
+            "hidden": true
+        }
+    },
+    "docs": {
+        "intro": "## Introduction\n\nwf-nanoclust is a Nextflow workflow for de novo clustering and taxonomic classification of 16S/18S rRNA amplicons from Oxford Nanopore sequencing data. It is adapted from NanoCLUST for compatibility with the EPI2ME platform.\n\n### Key Features\n\n- **UMAP + HDBSCAN Clustering**: Uses unsupervised machine learning for species-level clustering\n- **Consensus Polishing**: Multi-round polishing with Racon and Medaka for accurate consensus sequences\n- **BLAST Classification**: Taxonomic assignment using NCBI databases\n- **Interactive Reports**: HTML reports with clustering visualizations and abundance plots",
+        "links": "## Useful Links\n\n- [NanoCLUST Original Publication](https://doi.org/10.1093/bioinformatics/btaa900)\n- [EPI2ME Documentation](https://epi2me.nanoporetech.com/)\n- [GitHub Repository](https://github.com/epi2me-labs/wf-nanoclust)\n- [Oxford Nanopore Community](https://community.nanoporetech.com/)"
+    }
+}

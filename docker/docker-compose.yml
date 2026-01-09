@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  wf-nanoclust:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ontresearch/wf-nanoclust:v1.0.0
+    container_name: wf-nanoclust
+    volumes:
+      - ../:/workflow
+      - ../test_data:/data/input
+      - ../output:/data/output
+    working_dir: /data
+    command: /bin/bash
+
+  # Development container with mounted source
+  wf-nanoclust-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ontresearch/wf-nanoclust:dev
+    container_name: wf-nanoclust-dev
+    volumes:
+      - ../:/workflow:rw
+      - ~/.nextflow:/root/.nextflow:rw
+    working_dir: /workflow
+    stdin_open: true
+    tty: true
+    command: /bin/bash

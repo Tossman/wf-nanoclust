@@ -1,0 +1,53 @@
+# Nextflow
+.nextflow/
+.nextflow.log*
+work/
+results/
+output/
+
+# Test outputs
+test_output/
+
+# Docker
+*.tar
+
+# 2ME packages
+*.2me
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+*.egg-info/
+.eggs/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Conda
+conda-env/
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Large data files
+*.fastq
+*.fastq.gz
+*.fasta
+*.fasta.gz
+*.bam
+*.sam
+
+# Keep test data
+!test_data/*.fastq

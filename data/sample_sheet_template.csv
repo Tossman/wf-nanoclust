@@ -1,0 +1,6 @@
+barcode,alias,type,analysis_group
+barcode01,sample_A,test_sample,experiment_1
+barcode02,sample_B,test_sample,experiment_1
+barcode03,sample_C,test_sample,experiment_2
+barcode04,positive_ctrl,positive_control,controls
+barcode05,negative_ctrl,negative_control,controls

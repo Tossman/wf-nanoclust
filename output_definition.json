@@ -1,0 +1,159 @@
+{
+    "files": {
+        "workflow-report": {
+            "filepath": "wf-nanoclust-report.html",
+            "title": "Workflow Report",
+            "description": "Comprehensive HTML report with clustering results, UMAP visualizations, and taxonomic classifications",
+            "mime-type": "text/html",
+            "optional": false,
+            "type": "aggregated"
+        },
+        "umap-plot": {
+            "filepath": "clustering/hdbscan_umap_cluster.png",
+            "title": "UMAP Cluster Visualization",
+            "description": "2D UMAP projection showing read clusters colored by cluster assignment",
+            "mime-type": "image/png",
+            "optional": false,
+            "type": "per-sample"
+        },
+        "cluster-assignments": {
+            "filepath": "clustering/cluster_assignments.tsv",
+            "title": "Cluster Assignments",
+            "description": "Tab-separated file with per-read cluster membership",
+            "mime-type": "text/tab-separated-values",
+            "optional": false,
+            "type": "per-sample"
+        },
+        "consensus-sequences": {
+            "filepath": "consensus/*.fasta",
+            "title": "Consensus Sequences",
+            "description": "Polished consensus sequence for each identified cluster",
+            "mime-type": "text/x-fasta",
+            "optional": false,
+            "type": "per-sample"
+        },
+        "taxonomic-classification": {
+            "filepath": "classification/*.csv",
+            "title": "Taxonomic Classifications",
+            "description": "BLAST classification results with taxonomic lineage for each cluster",
+            "mime-type": "text/csv",
+            "optional": false,
+            "type": "per-sample"
+        },
+        "abundance-genus": {
+            "filepath": "abundances/abundance_genus.tsv",
+            "title": "Genus-level Abundances",
+            "description": "Relative abundance table aggregated at genus taxonomic level",
+            "mime-type": "text/tab-separated-values",
+            "optional": false,
+            "type": "aggregated"
+        },
+        "abundance-species": {
+            "filepath": "abundances/abundance_species.tsv",
+            "title": "Species-level Abundances",
+            "description": "Relative abundance table at species taxonomic level",
+            "mime-type": "text/tab-separated-values",
+            "optional": false,
+            "type": "aggregated"
+        },
+        "abundance-barplot": {
+            "filepath": "abundances/abundance_barplot.png",
+            "title": "Abundance Bar Plot",
+            "description": "Stacked bar plot showing relative abundances of detected taxa",
+            "mime-type": "image/png",
+            "optional": false,
+            "type": "aggregated"
+        },
+        "qc-stats": {
+            "filepath": "qc/per-file-stats.tsv",
+            "title": "QC Statistics",
+            "description": "Quality control statistics for input reads including length and quality distributions",
+            "mime-type": "text/tab-separated-values",
+            "optional": false,
+            "type": "per-sample"
+        },
+        "filtered-reads": {
+            "filepath": "qc/filtered_reads.fastq.gz",
+            "title": "Filtered Reads",
+            "description": "Quality-filtered and length-filtered reads used for analysis",
+            "mime-type": "application/gzip",
+            "optional": true,
+            "type": "per-sample"
+        },
+        "summary-csv": {
+            "filepath": "summary.csv",
+            "title": "Summary Statistics",
+            "description": "Summary CSV with key metrics for each sample including cluster counts and classification rates",
+            "mime-type": "text/csv",
+            "optional": false,
+            "type": "aggregated"
+        },
+        "execution-timeline": {
+            "filepath": "execution/timeline.html",
+            "title": "Execution Timeline",
+            "description": "Nextflow execution timeline showing process duration and parallelization",
+            "mime-type": "text/html",
+            "optional": true,
+            "type": "aggregated"
+        },
+        "execution-report": {
+            "filepath": "execution/report.html",
+            "title": "Execution Report",
+            "description": "Nextflow execution report with resource usage statistics",
+            "mime-type": "text/html",
+            "optional": true,
+            "type": "aggregated"
+        }
+    },
+    "output_groups": [
+        {
+            "title": "Main Results",
+            "description": "Primary workflow outputs",
+            "outputs": [
+                "workflow-report",
+                "summary-csv"
+            ]
+        },
+        {
+            "title": "Clustering Results",
+            "description": "UMAP clustering outputs",
+            "outputs": [
+                "umap-plot",
+                "cluster-assignments"
+            ]
+        },
+        {
+            "title": "Consensus and Classification",
+            "description": "Consensus sequences and taxonomic assignments",
+            "outputs": [
+                "consensus-sequences",
+                "taxonomic-classification"
+            ]
+        },
+        {
+            "title": "Abundance Analysis",
+            "description": "Taxonomic abundance tables and visualizations",
+            "outputs": [
+                "abundance-genus",
+                "abundance-species",
+                "abundance-barplot"
+            ]
+        },
+        {
+            "title": "Quality Control",
+            "description": "QC metrics and filtered data",
+            "outputs": [
+                "qc-stats",
+                "filtered-reads"
+            ]
+        },
+        {
+            "title": "Execution Reports",
+            "description": "Nextflow execution statistics",
+            "outputs": [
+                "execution-timeline",
+                "execution-report"
+            ]
+        }
+    ]
+}
